@@ -1,9 +1,12 @@
 import json
 import re
+from collections import defaultdict
+from typing import List, Dict, Tuple, Set
 
-def find_duplicates(issues):
+def find_duplicates(issues: dict, repo: str) -> List[Tuple[int,int]]: 
     dupl_re = re.compile(r"[dD]uplicate [oO]f #*(\d+)")
-    dupl_url_re = re.compile(r"[dD]uplicate [oO]f https://github.com/cli/cli/issues/(\d+)")
+    url = r"https://github.com/" + repo + "/issues/"
+    dupl_url_re = re.compile(f"[dD]uplicate [oO]f {url}(\d+)")
 
     duplicates = []
     for issue in issues:
@@ -24,8 +27,40 @@ def find_duplicates(issues):
                     break
     return duplicates
 
-if __name__ == "__main__":
-    with open("issues.json",'r') as file:
-        data = json.load(file)
+# note: these overlap with found duplicates
+def find_links(issues: dict, repo: str) -> List[Tuple[int,int]]:
+    url = r"https://github.com/" + repo + "/issues/"
+    url_re = re.compile(f"{url}(\d+)")
 
-    dupls = find_duplicates(data)
+    links = defaultdict(set)
+    for issue in issues:
+        num = issue["number"]
+        m = url_re.search(issue["body"])
+        if m:
+            for n in url_re.findall(issue["body"]):
+                links[num].add( eval(n) )
+        for comment in issue["comments"]:
+            if not comment["isMinimized"]:
+                m = url_re.search(comment["body"])
+                if m:
+                    for n in url_re.findall(issue["body"]):
+                        links[num].add( eval(n) )
+    pairs = []
+    for iss1 in links:
+        for iss2 in links[iss1]:
+            pairs.append( (iss1, iss2) )
+    return pairs
+
+
+def id_to_idx(issues: dict) -> Dict[int,int]:
+    '''get index of a issue from its GitHub ID'''
+    ids = [issue["number"] for issue in issues]
+    return { num: idx for idx, num in enumerate(ids) }
+
+def content(issue: dict) -> str:
+    bodys = [issue["title"], issue["body"]]
+    for comment in issue["comments"]:
+        if not comment["isMinimized"]:
+            bodys.append(comment["body"])
+    return "\n\n".join(bodys)
+

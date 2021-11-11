@@ -7,6 +7,6 @@ if [ "$#" -ne 1 ]; then
 fi
 
 gh issue list -R "$1" \
-    -L 2000 --state all \
+    -L 3000 --state all \
     --json number,title,body,comments\
     > issues.json
