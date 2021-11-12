@@ -13,6 +13,8 @@ Download your repo's issues and fine-tune the model
 ```
 # example with cli/cli 
 $ ./download.sh -R cli/cli 
+
+# this takes a long time without a GPU!
 $ ./train.py -R cli/cli
 ```
 
