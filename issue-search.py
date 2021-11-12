@@ -1,3 +1,4 @@
+#!/usr/bin/env python 
 import json
 import os
 import pickle 
@@ -5,9 +6,10 @@ import logging
 
 import argparse
 parser = argparse.ArgumentParser(
-    description = "Search for similar issues in a GitHub repository. Supply the issue ID and the repo with the `-R` flag.")
-#parser.add_argument("--model","-m", dest="model")
+    description = "Search for similar issues in a GitHub repository."
+                  "Supply the issue ID and the repo with the `-R` flag.")
 parser.add_argument("-R", dest="repo", required=True)
+parser.add_argument("-L", dest="limit", default=8, type=int)
 parser.add_argument("issue", type=int)
 args = parser.parse_args()
 
@@ -29,20 +31,20 @@ if __name__ == "__main__":
     idx = id_to_idx(issues)
 
     if os.path.exists(embedding_path):
-        logging.info("Load embeddings")
+        #logging.info("Load embeddings")
         with open(embedding_path, 'rb') as f:
-            data = pickle.load(f)
+            data = torch.load(f, map_location=torch.device("cpu"))
             ids = data["ids"]
             embeddings = data["embeddings"]
     else:
-        logging.info("Compute embeddings")
+        logging.info("Computing embeddings")
         model_path = "./data/{}-model".format(repo.replace('/','-'))
         model = SentenceTransformer(model_path)
 
         ids = [issue["number"] for issue in issues]
         embeddings = model.encode(issues, convert_to_tensor=True)
         with open(embedding_path, 'wb') as f: 
-            pickle.dump({ "ids": ids, "embeddings": embeddings}, f)
+            torch.save({ "ids": ids, "embeddings": embeddings}, f)
 
     try:
         query = embeddings[ idx[args.issue] ]
@@ -50,9 +52,9 @@ if __name__ == "__main__":
         raise ValueError(f"Issue #{args.issue} not found")
     
     cos_sims = util.pytorch_cos_sim(query, embeddings)[0]
-    top = torch.topk(cos_sims, k=10)
+    top = torch.topk(cos_sims, k=args.limit)
 
     for score, i in zip(top[0], top[1]):
         id = issues[i]["number"]
         title = issues[i]["title"]
-        print(f"\033[32m#{id:>4}\033[0m {title}")
+        print(f"\033[32m#{id:>4}\033[0m  {title}")

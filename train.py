@@ -1,14 +1,16 @@
+#!/usr/bin/env python
+import argparse
+parser = argparse.ArgumentParser(description = "fine tune embedding on a repository's issues")
+parser.add_argument("--repo","-R", dest="repo", required=True)
+args = parser.parse_args()
+
+import torch
 from torch.utils.data import DataLoader
 from sentence_transformers import SentenceTransformer, evaluation, losses, util
 from sentence_transformers.readers import InputExample
 import json
 
 from dataloader import *  
-
-import argparse
-parser = argparse.ArgumentParser(description = "fine tune embedding on a repository's issues")
-parser.add_argument("--repo","-r", dest="repo", required=True)
-args = parser.parse_args()
 
 if __name__ == "__main__":
     repo = args.repo
@@ -39,14 +41,19 @@ if __name__ == "__main__":
             # issue not found
             continue
 
-    bs = 8
-    epochs = 2
+    bs = 16
+    epochs = 4 
 
-    model = SentenceTransformer("stsb-distilbert-base")
+    #model_name = "all-MiniLM-L12-v2"
+    model_name = "multi-qa-MiniLM-L6-cos-v1"
+
+    model = SentenceTransformer(model_name)
+    if torch.cuda.is_available():
+        model.to("cuda")
 
     # add special tokens
     word_embedding = model._first_module()
-    tokens = ["gh","pr","graphQL","ssh","WSL","CLI","repo","stdin","tty"]
+    tokens = ["gh","pr","graphQL","ssh","WSL","CLI","repo","stdin","stderr","tty","amd64","arm64"]
     word_embedding.tokenizer.add_tokens(tokens, special_tokens=True)
     word_embedding.auto_model.resize_token_embeddings(len(word_embedding.tokenizer))
 
