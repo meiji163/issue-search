@@ -40,3 +40,4 @@ $ ./issue-search -R cli/cli 4713
 - [ ] remove inference dependencies
     - ideally only need the embedding vectors
 - [ ] package into a gh-extension
+- [ ] support query for new issues
