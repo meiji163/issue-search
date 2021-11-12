@@ -1,5 +1,5 @@
 # GitHub Issue Searcher
-A (possibly overkill) algorithm to search for similar issues in a GitHub repository with semantic search.  
+A (possibly overkill) algorithm to find similar issues in a GitHub repository with semantic search.  
 This can be useful in a large repository for identifying duplicate or relevant issues.
 
 ## Dependencies 
