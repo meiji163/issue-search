@@ -32,7 +32,7 @@ fi
 
 path="data/${repo/\//-}-issues.json"
 
-gh issue list -R "$repo" \
-    -L "$limit" --state all \
-    --json number,title,body,comments\
+gh issue list -R "$repo" -L "$limit" \
+    --state all \
+    --json number,title,body,comments,labels\
     > "$path"

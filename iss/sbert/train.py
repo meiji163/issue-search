@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import argparse
-parser = argparse.ArgumentParser(description = "fine tune embedding on a repository's issues")
+parser = argparse.ArgumentParser(description = "fine tune SBERT on a repository's issues")
 parser.add_argument("--repo","-R", dest="repo", required=True)
 args = parser.parse_args()
 
@@ -10,7 +10,7 @@ from sentence_transformers import SentenceTransformer, evaluation, losses, util
 from sentence_transformers.readers import InputExample
 import json
 
-from dataloader import *  
+from issim.utils import *  
 
 if __name__ == "__main__":
     repo = args.repo
